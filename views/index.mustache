@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <title>Home</title>
+  </head>
+  <body>
+    <div>
+      {{>menu}}
+      <div>
+      </div>
+      <ul>
+        {{#posts}}
+        <li>
+          <h4>{{title}}</h4>
+          <p>{{body}}</p>
+          <span>{{to_char}} - {{timepublished}}</span>
+          <form action="/delete-post" method="POST">
+            <input type="hidden" name="postid" value="{{postid}}"/>
+            <button type="submit">Delete Post</button>
+          </form>
+        </li>
+        {{/posts}}
+      </ul>
+    </div>
+  </body>
+</html>

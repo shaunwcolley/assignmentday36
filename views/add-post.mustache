@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <title>Add Post</title>
+  </head>
+  <body>
+    <div>
+      {{>menu}}
+      <div>
+        <form action="/add-post" method="POST">
+          <div>
+            <input type="text" name="title" placeholder="Best Post Ever"/>
+          </div>
+          <div>
+            <textarea name="body"></textarea>
+          </div>
+          <button type="submit">Post</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
