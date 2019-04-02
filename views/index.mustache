@@ -26,11 +26,6 @@
 
             <h5>Comments: {{count}} </h5>
             {{#comments}}
-            <form action="/comment" method="POST">
-              <input type="hidden" name="postID" value="{{postid}}"/>
-              <input type="text" name="comment" placeholder="Awesome blog post!"/>
-              <button type="submit">Comment</button>
-            </form>
             {{/comments}}
             {{^comments}}
             <form action="/view-comments" method="POST">
@@ -38,6 +33,11 @@
               <button type="submit">View Comments</button>
             </form>
             {{/comments}}
+            <form action="/comment" method="POST">
+              <input type="hidden" name="postID" value="{{postid}}"/>
+              <input type="text" name="comment" placeholder="Awesome blog post!"/>
+              <button type="submit">Comment</button>
+            </form>
           </div>
         </li>
         {{/posts}}

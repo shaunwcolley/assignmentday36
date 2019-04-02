@@ -4,6 +4,8 @@ const mustacheExpress = require('mustache-express')
 const path = require('path')
 const pgp = require('pg-promise')()
 const bcrypt = require('bcrypt')
+const Comment = require('./comment.js')
+const Post = require('./post.js')
 const app = express()
 const VIEWS_PATH = path.join(__dirname, '/views')
 const connectionString = "postgres://localhost:5432/blog"
@@ -18,6 +20,7 @@ app.use(session({
 }))
 
 let users = []
+let posts = []
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/css', express.static('css'))
@@ -123,20 +126,40 @@ app.post('/comment', (req, res) => {
     res.redirect('/home')
   }).catch(error => console.log(error))
 })
+
 let commentsArray = []
 app.post('/view-comments', (req, res) => {
   let postID = req.body.postID
-  db.any("SELECT postid, title, body, timepublished, to_char(datepublished, 'dd-mm-yyyy') FROM posts WHERE ispublished = True")
-  .then((posts) => {
-    commentsArray.push(posts)
-    db.any("SELECT commentid, comment FROM comments c JOIN posts p ON p.postid = c.postid WHERE c.postid = $1;", [postID])
-    .then((commentNumber) => {
-      console.log(commentNumber)
-      res.render('index', {comments: [1], posts: commentsArray[0], count: commentNumber.length})
+  db.any('SELECT p.postid, p.title, p.body, c.comment as "content", c.commentid FROM posts p JOIN comments c ON p.postid = c.postid;')
+  .then((data) =>{
+    data.forEach((item) => {
+      if(posts.length == 0) {
+        let post = new Post(item.title, item.body, item.postid)
+        let comment = new Comment(item.content, item.commentid)
+        post.comments.push(comment)
+        posts.push(post)
+      } else {
+        let existingPost = posts.find((post) => {
+          return post.postid == item.postid
+        })
+      }
     })
+    console.log(posts)
   })
+  res.redirect('/home')
 })
 
 app.listen(3000, function(){
   console.log("Another day another server ...")
 })
+
+
+// db.any("SELECT postid, title, body, timepublished, to_char(datepublished, 'dd-mm-yyyy') FROM posts WHERE ispublished = True")
+// .then((posts) => {
+//   commentsArray.push(posts)
+//   db.any("SELECT commentid, comment FROM comments c JOIN posts p ON p.postid = c.postid WHERE c.postid = $1;", [postID])
+//   .then((commentNumber) => {
+//     console.log(commentNumber)
+//     res.render('index', {comments: [1], posts: commentsArray[0], count: commentNumber.length})
+//   })
+// })
