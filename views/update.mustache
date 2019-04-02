@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
     <link rel="stylesheet" href="/css/style.css"/>
@@ -16,10 +15,6 @@
           <p>{{body}}</p>
           <span>{{to_char}} - {{timepublished}}</span>
           <div>
-            <form action="/delete-post" method="GET">
-              <input type="hidden" name="postid" value="{{postid}}"/>
-              <button type="submit">Delete Post</button>
-            </form>
             <form action="/update-post" method="POST">
               <input type="hidden" name="updateid" value="{{postid}}"/>
               <button type="submit">Update Post</button>

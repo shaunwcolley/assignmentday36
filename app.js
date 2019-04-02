@@ -87,18 +87,23 @@ app.get('/login', (req, res) => {
   res.render('login')
 })
 
-app.post('/login', (req, res) => {
+app.post('/login', (req, response) => {
   let username = req.body.username
   let persistedUser = users.find((user) => {
     return user.username == username
   })
   bcrypt.compare(req.body.password, persistedUser.hash, function(err, res) {
       if(res) {
-        res.
+        if(req.session){
+          req.session.username = username
+          console.log(req.session.username)
+        }
+      } else {
+        console.log('invalid crendentials')
       }
     })
   console.log(persistedUser)
-  res.redirect('/home')
+  response.redirect('/home')
 })
 
 app.post('/signout',(req, res) => {
@@ -106,6 +111,11 @@ app.post('/signout',(req, res) => {
 })
 app.get('/', (req, res) => {
   res.render('main')
+})
+
+app.post('/update-post', (req, res) => {
+  let updateid = req.body.updateid
+  res.render('update-post', {postid: updateid})
 })
 
 app.listen(3000, function(){
