@@ -16,14 +16,28 @@
           <p>{{body}}</p>
           <span>{{to_char}} - {{timepublished}}</span>
           <div>
-            <form action="/delete-post" method="GET">
-              <input type="hidden" name="postid" value="{{postid}}"/>
+            <form action="/delete-post" method="POST">
+              <input type="hidden" name="postID" value="{{postid}}"/>
               <button type="submit">Delete Post</button>
+              <a href="/update-post/id/{{postid}}"><button>Edit Post</button></a>
             </form>
-            <form action="/update-post" method="POST">
-              <input type="hidden" name="updateid" value="{{postid}}"/>
-              <button type="submit">Update Post</button>
+          </div>
+          <div>
+
+            <h5>Comments: {{count}} </h5>
+            {{#comments}}
+            <form action="/comment" method="POST">
+              <input type="hidden" name="postID" value="{{postid}}"/>
+              <input type="text" name="comment" placeholder="Awesome blog post!"/>
+              <button type="submit">Comment</button>
             </form>
+            {{/comments}}
+            {{^comments}}
+            <form action="/view-comments" method="POST">
+              <input type="hidden" name="postID" value="{{postid}}"/>
+              <button type="submit">View Comments</button>
+            </form>
+            {{/comments}}
           </div>
         </li>
         {{/posts}}

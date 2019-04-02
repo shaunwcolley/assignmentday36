@@ -17,18 +17,6 @@ app.use(session({
   saveUninitialized: true
 }))
 
-// let passwords = []
-//
-// bcrypt.hash("Scooby-doo", saltRounds, function(err, hash) {
-//   passwords.push(hash)
-//   console.log(hash)
-//   console.log(passwords)
-//   bcrypt.compare("Scooby-doo", passwords[0], function(err, res) {
-//     console.log(res)
-//   })
-// })
-
-
 let users = []
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -40,9 +28,9 @@ app.set('view engine', 'mustache')
 
 
 app.get('/home', (req, res) => {
-  db.any("SELECT postid, title, body, timepublished, to_char(datepublished, 'dd-mm-yyyy') FROM posts")
+  db.any("SELECT postid, title, body, timepublished, to_char(datepublished, 'dd-mm-yyyy') FROM posts WHERE ispublished = True")
   .then((posts) => {
-    res.render('index.mustache', {posts: posts})
+    res.render('index', {posts: posts})
   })
 })
 
@@ -56,15 +44,13 @@ app.post('/add-post', (req, res) => {
 
   db.none('INSERT INTO posts(title, body) VALUES($1,$2);', [title, body])
   .then(() => {
-    console.log('success')
     res.redirect('/home')
   }).catch(error => console.log(error))
 
 })
 
 app.post('/delete-post', (req, res) => {
-  let postID = req.body.postid
-
+  let postID = pasrseInt(req.body.postID)
   db.none('DELETE FROM posts WHERE postid = $1', [postID])
   .then(() => {
     res.redirect('/home')
@@ -96,14 +82,12 @@ app.post('/login', (req, response) => {
       if(res) {
         if(req.session){
           req.session.username = username
-          console.log(req.session.username)
+          response.redirect('/home')
         }
       } else {
         console.log('invalid crendentials')
       }
     })
-  console.log(persistedUser)
-  response.redirect('/home')
 })
 
 app.post('/signout',(req, res) => {
@@ -113,9 +97,44 @@ app.get('/', (req, res) => {
   res.render('main')
 })
 
+app.get("/update-post/id/:postID", (req, res) => {
+  let postID = parseInt(req.params.postID)
+  db.one("SELECT postid, title, body FROM posts WHERE postid = $1", [postID])
+  .then((post) => {
+    res.render('update', post)
+  })
+})
+
 app.post('/update-post', (req, res) => {
-  let updateid = req.body.updateid
-  res.render('update-post', {postid: updateid})
+  let postID = parseInt(req.body.postID)
+  let title = req.body.title
+  let body = req.body.body
+  db.none("UPDATE posts SET title = $1, body = $2 WHERE postid = $3;", [title,body,postID])
+  .then(()=> {
+    res.redirect('/home')
+  })
+})
+
+app.post('/comment', (req, res) => {
+  let postID = parseInt(req.body.postID)
+  let comment = req.body.comment
+  db.none('INSERT INTO comments(comment, postid) VALUES($1, $2);', [comment,postID])
+  .then(() => {
+    res.redirect('/home')
+  }).catch(error => console.log(error))
+})
+let commentsArray = []
+app.post('/view-comments', (req, res) => {
+  let postID = req.body.postID
+  db.any("SELECT postid, title, body, timepublished, to_char(datepublished, 'dd-mm-yyyy') FROM posts WHERE ispublished = True")
+  .then((posts) => {
+    commentsArray.push(posts)
+    db.any("SELECT commentid, comment FROM comments c JOIN posts p ON p.postid = c.postid WHERE c.postid = $1;", [postID])
+    .then((commentNumber) => {
+      console.log(commentNumber)
+      res.render('index', {comments: [1], posts: commentsArray[0], count: commentNumber.length})
+    })
+  })
 })
 
 app.listen(3000, function(){
