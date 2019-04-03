@@ -20,7 +20,7 @@ app.use(session({
 }))
 
 let users = []
-let posts = []
+
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/css', express.static('css'))
@@ -129,24 +129,35 @@ app.post('/comment', (req, res) => {
 
 let commentsArray = []
 app.post('/view-comments', (req, res) => {
+  let posts = []
   let postID = req.body.postID
-  db.any('SELECT p.postid, p.title, p.body, c.comment as "content", c.commentid FROM posts p JOIN comments c ON p.postid = c.postid;')
+  db.any("SELECT p.postid, p.title, p.body, timepublished, to_char(datepublished, 'dd-mm-yyyy'), c.comment, c.commentid FROM posts p JOIN comments c ON p.postid = c.postid;")
   .then((data) =>{
     data.forEach((item) => {
       if(posts.length == 0) {
-        let post = new Post(item.title, item.body, item.postid)
-        let comment = new Comment(item.content, item.commentid)
+        let post = new Post(item.title, item.body, item.postid, item.to_char, item.timepublished)
+        let comment = new Comment(item.comment, item.commentid)
         post.comments.push(comment)
         posts.push(post)
       } else {
         let existingPost = posts.find((post) => {
           return post.postid == item.postid
         })
+        if (existingPost) {
+          let comment = new Comment(item.comment, item.commentid)
+          existingPost.comments.push(comment)
+        } else {
+          let post = new Post(item.title, item.body, item.postid, item.to_char, item.timepublished)
+          let comment = new Comment(item.comment, item.commentid)
+          post.comments.push(comment)
+          posts.push(post)
+        }
       }
     })
     console.log(posts)
+    res.render('index', {posts:posts})
   })
-  res.redirect('/home')
+
 })
 
 app.listen(3000, function(){

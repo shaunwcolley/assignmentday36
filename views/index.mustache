@@ -24,8 +24,9 @@
           </div>
           <div>
 
-            <h5>Comments: {{count}} </h5>
+            <h5>Comments: {{comments.length}} </h5>
             {{#comments}}
+              <div>{{content}}</div>
             {{/comments}}
             {{^comments}}
             <form action="/view-comments" method="POST">
